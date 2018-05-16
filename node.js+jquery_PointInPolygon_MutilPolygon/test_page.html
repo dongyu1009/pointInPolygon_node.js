@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("button").click(function(){
+    $.get("http://127.0.0.1:8100/?wid=64&x=1&y=1",function(data,status){
+        var data = JSON.parse(data);
+        if (data.result == "error")
+        {
+            alert("ERROR, Desc:" + data.desc);
+        }else {
+            alert(data.in);
+        }
+        // alert("数据：" + data + "\n状态：" + status);
+    });
+  });
+});
+</script>
+</head>
+<body>
+
+<button>获得结果</button>
+
+</body>
+</html>
