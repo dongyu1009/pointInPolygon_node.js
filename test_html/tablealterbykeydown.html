@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>表格操作</title>
+	<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+</head>
+<body onkeydown="javascript:keyDown()">
+	<table border="1" id="mytable">
+	  <tr>
+	    <th>Month</th>
+	    <th>Savings</th>
+	  </tr>
+	  <tr>
+	    <td>January</td>
+	    <td>$100</td>
+	  </tr>
+	</table>
+	<script>
+		function keyDown() {
+			var value= event.keyCode;
+			var key = String.fromCharCode(event.keyCode);
+			if (value == 8)
+			{
+				$("#mytable").find("tr:last").remove();
+			} else {
+				$("#mytable").append("<tr><td>" + key + "</td><td>新的一行</td></tr>")
+			}
+		}
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		var xmin = 8202121.705887;
+		var xmax = 14016956.325667;
+		var ymin = 2436431.846824;
+		var ymax = 7015420.528754;
+		function GetRandomNum(Min,Max)
+		{   
+			var Range = Max - Min;   
+			var Rand = Math.random();   
+			return(Min + Math.round(Rand * Range));   
+		}   
+		function GetData(x, y)
+		{
+			$.ajax({
+				 type: "GET",
+				 url: "http://localhost:3000/?x=" + x + "&y=" + y,
+				 jsonp:"jsoncallback",  
+				 dataType: "text",
+				 success: function(data){
+						// alert(data + ' ' + x + ' ' + y); 
+						if (data == 'no')
+						{
+							var x = GetRandomNum(xmin,xmax);
+							var y = GetRandomNum(ymin,ymax);
+							GetData(x, y); 
+						}else {
+							alert(data); 
+						}
+				 }	
+			 });
+		}
+		var x = GetRandomNum(xmin,xmax);
+		var y = GetRandomNum(ymin,ymax);
+		GetData(x, y); 
+	</script>
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		$.ajax({
+	         type: "GET",
+	         url: "http://localhost:3000/?x=3&y=3",
+	         dataType : 'jsonp',  
+	         jsonp:"jsoncallback",  
+	         // dataType: "string",
+	         dataType: "text",
+	         success: function(data){
+	         		alert(data); 
+	         }	
+	     });
+	</script>
+</head>
+<body>
+
+</body>
+</html>

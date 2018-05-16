@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="../css/ol.css">
+	<script type="text/javascript" src="../js/ol.js"></script>
+</head>
+<body>
+	<input type="button" name="addBtn" value="ChangePoint" onClick="changePoint();">
+	<div id="mymap" class="map panel-body" style="height: 100%"></div>
+	<script type="text/javascript">
+
+		function GetRandomNum(Min,Max)
+		{   
+			var Range = Max - Min;   
+			var Rand = Math.random();   
+			return(Min + Math.round(Rand * Range));   
+		}   
+
+		function changePoint(){
+			var newfeature = new ol.Feature(new ol.geom.Point([12361845.307 + GetRandomNum(-10000, 10000), 3460122.689-GetRandomNum(-10000, 10000)]));
+			var layer = map.getLayers().item(map.getLayers().getLength() - 1);
+			var source = layer.getSource();
+			source.clear();
+			source.addFeature(newfeature);
+		}
+		var features = new Array(1);
+		features[0] = new ol.Feature(new ol.geom.Point([12361845.307 + 611.188, 3460122.689-327.025]));
+		var source = new ol.source.Vector({
+		  features: features
+		});
+		var clusters = new ol.layer.Vector({
+		  source: source,
+
+		  style: new ol.style.Style({
+		          image: new ol.style.Circle({
+		            fill: new ol.style.Fill({
+		              color: '#00c0ff'
+		            }),
+		            radius: 5,
+		            stroke: new ol.style.Stroke({
+		              color: '#ffffff',
+		              width: 1
+		            })
+		          })
+		        })
+
+		});
+
+		var scaleLineControl = new ol.control.ScaleLine({
+		  units: "metric"
+		});
+
+		var sourcelabel = new ol.source.XYZ({
+		  url:'http://www.yewaibao.org:7080/PBS/rest/services/GoogleMapsLabel/MapServer' + '/tile/{z}/{y}/{x}'
+		});
+		var sourceimagery = new ol.source.XYZ({
+		  url:'http://www.yewaibao.org:7080/PBS/rest/services/GoogleMapsImagery/MapServer' + '/tile/{z}/{y}/{x}'
+		});
+
+		var map = new ol.Map({
+		  target: 'mymap',
+		  logo: false,
+		  layers: [
+		  new ol.layer.Tile({
+		    source:sourceimagery
+		  }),
+		  new ol.layer.Tile({
+		    source:sourcelabel
+		  }),
+		  clusters],
+		  view: new ol.View({
+		    center: ol.proj.fromLonLat([107.223836,37.705470]), 
+		    zoom: 4
+		  }),
+		  controls: ol.control.defaults().extend([scaleLineControl])
+		});
+
+		// show the boundry of China mainland
+		var strJson = "{\"hasZ\":false,\"hasM\":false,\"rings\":[[[13708028.009, 7114424.164],[15044176.515, 6077255.423],[12229004.218, 1970913.877],[8186162.799, 4828419.592],[13708028.009, 7114424.164]]]}"
+		var geometry = (new ol.format.EsriJSON()).readGeometry(strJson)
+		map.getView().fit(geometry, {padding: [10, 10, 10, 10], constrainResolution: false});
+
+	</script>
+</body>
+</html>

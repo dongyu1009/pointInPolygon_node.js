@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>表格操作</title>
+	<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+	<table border="1" id="mytable">
+	  <tr>
+	    <th>Month</th>
+	    <th>Savings</th>
+	  </tr>
+	  <tr>
+	    <td>January</td>
+	    <td>$100</td>
+	  </tr>
+	</table>
+	<input type="button" name="addBtn" value="&nbsp;&nbsp;add&nbsp;&nbsp;" onClick="addRow();">
+	<script>
+		function addRow() {
+			$("#mytable").append("<tr><td>第二行</td><td>第二行</td></tr>")
+		}
+	</script>
+
+</body>
+</html>

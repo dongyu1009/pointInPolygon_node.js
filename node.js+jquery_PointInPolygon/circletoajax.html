@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		function GetRandomNum(Min,Max)
+		{   
+			var Range = Max - Min;   
+			var Rand = Math.random();   
+			return(Min + Math.round(Rand * Range));   
+		}   
+		function GetData(x, y)
+		{
+			$.ajax({
+				 type: "GET",
+				 url: "http://localhost:3000/?x=" + x + "&y=" + y,
+				 jsonp:"jsoncallback",  
+				 dataType: "text",
+				 success: function(data){
+						// alert(data + ' ' + x + ' ' + y); 
+						if (data == 'no')
+						{
+							var x = GetRandomNum(3,8);
+							var y = GetRandomNum(1,6);
+							GetData(x, y); 
+						}else {
+							alert(data); 
+						}
+				 }	
+			 });
+		}
+		var x = GetRandomNum(3,8);
+		var y = GetRandomNum(1,6);
+		GetData(x, y); 
+	</script>
+</head>
+<body>
+
+</body>
+</html>
