@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome/css/font-awesome.css">
+	<link rel="stylesheet" type="text/css" href="../css/ol.css">
+	<script type="text/javascript" src="../js/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../js/ol.js"></script>
+	<script src="https://cdn.bootcss.com/require.js/2.3.5/require.min.js"></script>
+    <script async="" src="https://cdn.rawgit.com/eligrey/Blob.js/0cef2746414269b16834878a8abc52eb9d53e6bd/Blob.js"/>
+	<script type="text/javascript" src="../js/FileSaver.min.js"></script>
+	<script type="text/javascript" src="../js/FileSaver.js"></script>
+
+	<script type="text/javascript">
+		var count = 0;
+		var current_x = undefined;
+		var current_y = undefined;
+
+		function keyDown() {
+			var value= event.keyCode;
+			var key = String.fromCharCode(event.keyCode);
+			// alert(value);
+			if (value == 8)
+			{
+				$("#mytable").find("tr:last").remove();
+			} if (value == 96) {
+				changePoint();
+			} else if (value > 96 && value <106){
+				$("#mytable").append("<tr><td>" + current_x + "</td><td>" + current_y + "</td><td>" + key + "</td></tr>")
+				changePoint();
+			}
+		}
+
+		function save(){
+			var result = "x,y,class\r\n";
+			var trList = $("#mytable").find("tr")
+			//alert(trList.length);
+		    for (var i=1;i<trList.length;i++) {
+		        var tdArr = trList.eq(i).find("td");
+		        var x = tdArr.eq(0).text();
+		        var y = tdArr.eq(1).text();
+		        var mclass = tdArr.eq(2).text();
+		        result = result + x + "," + y + "," + mclass + "\r\n"
+
+		    }
+		    // alert(result);
+			var blob = new Blob([result], {type: "text/plain;charset=utf-8"});
+		    saveAs(blob, "result.csv");
+		}
+	</script>
+</head>
+<body onkeydown="javascript:keyDown()">
+	<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+	    <div class="navbar-header">
+	    	<img class="navbar-brand" style="padding: 10px;" src="../image/ic_travel.png">
+	    </div>
+	    <div class="navbar-header">
+	        <a class="navbar-brand" href="./index.php" style="font-family: CRAMPS">Google Map</a>
+	    </div>
+	    <div>
+	        <ul class="nav navbar-nav navbar-right">
+	        	<!--
+	            <li class="active"><a href="./index.php">Home</a></li>
+	            <li><a href="./panorama.php">GitHub</a></li>
+	            <li><a href="./uav.php">About</a></li>
+	            <li><a href="./compare.php">RSS</a></li>
+	        -->
+	        </ul>
+	    </div>
+    </div>
+	</nav>
+
+	<div class="container">
+	    <div class="row">
+	        <div class="col-xs-4 ">
+	        	<div class="panel panel-default">
+				  <div class="panel-heading">Table <span id="txtCount"></span> <input type="button" name="addBtn" value="save" onClick="save();"></div>
+					<table border="1" id="mytable" style="width: 100%;">
+					  <tr>
+					    <th>x</th>
+					    <th>y</th>
+					    <th>class</th>
+					  </tr>
+					</table>
+				  <div class="panel-body">
+				  </div>
+				</div>
+	        </div>
+	        <div class="col-xs-8 ">
+	        	<div class="panel panel-default">
+				  <div class="panel-heading">Google Map 1-森林; 2-草地; 3-耕地; 4-水体; 5-城镇; 6-荒地</div>
+				  <div class="panel-body">
+					<div id="mymap" class="map panel-body" style="height: 300px;"></div>
+				  </div>
+				</div>
+
+				<div class="container">
+				    <div class="row">
+				        <div class="col-xs-4">
+							<div id="mymap1" class="map panel-body" style="height: 300px; width: 100%"></div>
+				        </div>
+				        <div class="col-xs-4">
+							<div id="mymap2" class="map panel-body" style="height: 300px; width: 100%"></div>
+				        </div>
+				    </div>
+				</div>
+	        </div>
+	    </div>
+	</div>
+
+	<script type="text/javascript">
+	var xmin = 8202121.705887;
+	var xmax = 14016956.325667;
+	var ymin = 2436431.846824;
+	var ymax = 7015420.528754;
+
+	function GetRandomNum(Min,Max)
+	{   
+		var Range = Max - Min;   
+		var Rand = Math.random();   
+		return(Min + Math.round(Rand * Range));   
+	}   
+
+	function GetData(x, y)
+	{
+		$.ajax({
+			 type: "GET",
+			 url: "http://localhost:3000/?x=" + x + "&y=" + y,
+			 jsonp:"jsoncallback",  
+			 dataType: "text",
+			 success: function(data){
+					// alert(data + ' ' + x + ' ' + y); 
+					if (data == 'no')
+					{
+						var x = GetRandomNum(xmin,xmax);
+						var y = GetRandomNum(ymin,ymax);
+						GetData(x, y); 
+					}else {
+						// alert(data); 
+
+						var location =data.split(",");
+						current_x = location[0];
+						current_y = location[1];
+
+						var newfeature = new ol.Feature(new ol.geom.Point([location[0], location[1]]));
+						var layer = map.getLayers().item(map.getLayers().getLength() - 1);
+						var source = layer.getSource();
+						source.clear();
+						source.addFeature(newfeature);
+						// alert(location[0], location[1]);
+						// var geometry = ol.proj.fromLonLat([-0.12755, 51.507222]);
+						// var geometry = new ol.geom.Point([location[0], location[1]]);
+						// alert(geometry);
+
+						map.getView().animate({
+					          center: [location[0], location[1]],
+					          duration: 2
+					        });
+
+						map1.getView().animate({
+					          center: [location[0], location[1]],
+					          duration: 2
+					        });
+						map2.getView().animate({
+					          center: [location[0], location[1]],
+					          duration: 2
+					        });
+						// map.getView().setCenter( [location[0], location[1]]);
+						// map.getView().setZoom(12);
+
+					}
+			 }	
+		 });
+	}
+
+	function changePoint(){
+		txtCount.innerHTML = "" + count;
+		count++;
+		var x = GetRandomNum(xmin,xmax);
+		var y = GetRandomNum(ymin,ymax);
+		GetData(x, y); 
+	}
+
+
+    function polygonStyleFunction(feature, resolution) {
+        return new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'white',
+                width: 1
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(63, 167, 0, 0)'
+            })
+        });
+    }
+
+
+	var scaleLineControl = new ol.control.ScaleLine({
+	  units: "metric"
+	});
+
+	var sourcelabel = new ol.source.XYZ({
+	  url:'http://mt1.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s='
+
+	});
+	var sourceimagery = new ol.source.XYZ({
+	  url:'http://mt1.google.cn/vt/lyrs=s&gl=cn&x={x}&y={y}&z={z}&s='
+	});
+
+	var map = new ol.Map({
+	  target: 'mymap',
+	  logo: false,
+	  layers: [
+	  new ol.layer.Tile({
+	    source:sourceimagery
+	  }),
+	  new ol.layer.Tile({
+	    source:sourcelabel
+	  })],
+	  view: new ol.View({
+	    center: ol.proj.fromLonLat([107.223836,37.705470]), 
+	    zoom: 4
+	  }),
+	  controls: ol.control.defaults().extend([scaleLineControl])
+	});
+
+	// show the boundry of China mainland
+	var strJson = "{\"hasZ\":false,\"hasM\":false,\"rings\":[[[13708028.009, 7114424.164],[15044176.515, 6077255.423],[12229004.218, 1970913.877],[8186162.799, 4828419.592],[13708028.009, 7114424.164]]]}"
+	var geometry = (new ol.format.EsriJSON()).readGeometry(strJson)
+	map.getView().fit(geometry, {padding: [10, 10, 10, 10], constrainResolution: false});
+
+
+	var map1 = new ol.Map({
+	  target: 'mymap1',
+	  logo: false,
+	  layers: [
+	  new ol.layer.Tile({
+	    source:sourceimagery
+	  }),
+	  new ol.layer.Tile({
+	    source:sourcelabel
+	  })],
+	  view: new ol.View({
+	    center: ol.proj.fromLonLat([107.223836,37.705470]), 
+	    zoom: 4
+	  }),
+	  controls: ol.control.defaults().extend([scaleLineControl])
+	});
+
+	var map2 = new ol.Map({
+	  target: 'mymap2',
+	  logo: false,
+	  layers: [
+	  new ol.layer.Tile({
+	    source:sourceimagery
+	  }),
+	  new ol.layer.Tile({
+	    source:sourcelabel
+	  })],
+	  view: new ol.View({
+	    center: ol.proj.fromLonLat([107.223836,37.705470]), 
+	    zoom: 4
+	  }),
+	  controls: ol.control.defaults().extend([scaleLineControl])
+	});
+
+
+    $.ajax({
+        url: "./boundary.json",
+        data: [],
+        cache: false,
+        async: false,
+        dataType: 'json',
+
+        success: function (result) {
+
+
+	        var prfeatures = new Array(1);
+
+	        var geom1 = (new ol.format.GeoJSON()).readGeometry(result['features'][0].geometry);
+	        prfeatures[0] = new ol.Feature(geom1);
+	        var prsource = new ol.source.Vector({
+	            features: prfeatures
+	        });
+
+	        var prclusters = new ol.layer.Vector({
+	            source: prsource,
+	            style: polygonStyleFunction
+	        });
+
+			var features = new Array(1);
+			features[0] = new ol.Feature(new ol.geom.Point([0,0]));
+			var source = new ol.source.Vector({
+			  features: features
+			});
+			var clusters = new ol.layer.Vector({
+			  source: source,
+
+			  style: new ol.style.Style({
+			          image: new ol.style.Circle({
+			            fill: new ol.style.Fill({
+			              color: '#00c0ff'
+			            }),
+			            radius: 5,
+			            stroke: new ol.style.Stroke({
+			              color: '#ffffff',
+			              width: 1
+			            })
+			          })
+			        })
+
+			});
+			map.addLayer(prclusters);
+			map.addLayer(clusters);
+
+			changePoint();
+
+		},
+
+        error: function (msg) {
+            alert("系统发生错误:" + msg);
+        }
+    });
+	</script>
+</body>
+</html>
