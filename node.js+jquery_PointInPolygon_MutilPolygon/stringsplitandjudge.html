@@ -1,0 +1,13 @@
+<script>
+    var aa = "21"
+    var dd = aa.split(',')
+    var has = undefined;
+    for(var i = 0; i < dd.length; i ++) {
+        var number = parseInt(dd[i]);
+        if(number == 21)
+            has = true;
+        else if(has == undefined)
+            has = false;
+    }
+    alert("" + has);
+</script>

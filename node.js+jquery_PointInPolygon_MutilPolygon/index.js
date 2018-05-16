@@ -37,7 +37,7 @@ http.createServer(function(req, res){
     var params = url.parse(req.url, true).query;
 	var x = params.x;
 	var y = params.y;
-	var wid = params.wid;
+	var wids = params.wid;
     var inputdesc = " x:" + x + " y:" + y + " wid:" + wid + "; request IP:" + client_ip;
     if(x == undefined)
     {
@@ -53,17 +53,10 @@ http.createServer(function(req, res){
         res.end();
         return;
     }
-    if(wid == undefined)
+    if(wids == undefined)
     {
         res.write(JSON.stringify({"result": "error", "desc": "Lack of wid parameter."}));
         logger.info("errorcode : 3, " + inputdesc);
-        res.end();
-        return;
-    }
-    if(isNaN(wid))
-    {
-        res.write(JSON.stringify({"result": "error", "desc": "wid parameter is not valid."}));
-        logger.info("errorcode : 4, " + inputdesc);
         res.end();
         return;
     }
@@ -81,26 +74,35 @@ http.createServer(function(req, res){
         res.end();
         return;
     }
-    wid = parseInt(wid);
-    
     var features = data.features;
-    var ffeatures = features.filter(function(e){
-        return e.properties.workgroup === wid;
-    });
-    if(ffeatures.length < 1)
+    var inPolygon = undefined;
+    var widsArr = wids.split(',');
+    for (var i = 0; i < widsArr.length; i++)
+    {
+        var wid = parseInt(widsArr[i]);
+        if(isNaN(wid))
+        {
+            res.write(JSON.stringify({"result": "error", "desc": "wid parameter is not valid."}));
+            logger.info("errorcode : 4, " + inputdesc);
+            res.end();
+            return;
+        }
+        var ffeatures = features.filter(function(e){
+            return e.properties.workgroup === wid;
+        });
+        if(ffeatures[0] != undefined)
+        {
+            var _inThis = gju.pointInPolygon({"type": "Point", "coordinates": [x, y]}, ffeatures[0].geometry);
+            if(_inThis)
+                inPolygon = true;
+            else if(inPolygon == undefined)
+                inPolygon = false;
+        }
+    }
+    if(inPolygon == undefined)
     {
         res.write(JSON.stringify({"result": "error", "desc": "Feature is not found."}));
         logger.info("errorcode : 7, " + inputdesc);
-        res.end();
-        return;
-    }
-    var inPolygon = undefined;
-    if(ffeatures[0] != undefined)
-        inPolygon = gju.pointInPolygon({"type": "Point", "coordinates": [x, y]}, ffeatures[0].geometry);
-    if(inPolygon == undefined)
-    {
-        res.write(JSON.stringify({"result": "error", "desc": "Internal Error."}));
-        logger.info("errorcode : 8, " + inputdesc);
         res.end();
         return;
     }
@@ -116,3 +118,5 @@ http.createServer(function(req, res){
     res.end();
  
 }).listen(8100);
+console.log("-- 正镶白旗精准扶贫签到位置判断工具，请勿关闭! -- ");
+logger.info("Server Started At " + new Date()  + "!");
